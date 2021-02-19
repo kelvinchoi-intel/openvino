@@ -86,12 +86,40 @@ KERNEL(scatter_nd_update_ref)(const __global INPUT0_TYPE* data,
     }
 
     uint update_offset = indices_idx * size_to_update;
+
     for (int i = 0; i < size_to_update; i++)
     {
         uint dst_idx = dst_offset + i;
         uint up_idx = update_offset + i;
         INPUT2_TYPE val = updates[up_idx];
+
         #if HAS_FUSED_OPS
+            //=============================================================================
+            const uint B_LEN = OUTPUT_FEATURE_NUM * OUTPUT_SIZE_Z * OUTPUT_SIZE_W * OUTPUT_SIZE_Y * OUTPUT_SIZE_X;
+            const uint F_LEN = OUTPUT_SIZE_Z * OUTPUT_SIZE_W * OUTPUT_SIZE_Y * OUTPUT_SIZE_X;
+            const uint Z_LEN = OUTPUT_SIZE_W * OUTPUT_SIZE_Y * OUTPUT_SIZE_X;
+            const uint W_LEN = OUTPUT_SIZE_Y * OUTPUT_SIZE_X;
+            const uint Y_LEN = OUTPUT_SIZE_X;
+            const uint X_LEN = 1;
+
+            const uint b        = dst_idx / B_LEN;
+            const uint b_remain = dst_idx % B_LEN;
+
+            const uint f        = b_remain / F_LEN;
+            const uint f_remain = b_remain % F_LEN;
+
+            const uint z        = f_remain / Z_LEN;
+            const uint z_remain = f_remain % Z_LEN;
+
+            const uint w        = z_remain / W_LEN;
+            const uint w_remain = z_remain % W_LEN;
+
+            const uint y        = w_remain / Y_LEN;
+            const uint y_remain = w_remain % Y_LEN;
+
+            const uint x        = y_remain;
+            //=============================================================================
+
             FUSED_OPS_SECOND_KERNEL;
             output[dst_idx] = TO_OUTPUT_TYPE(FUSED_OPS_RESULT_SECOND_KERNEL);
         #else
