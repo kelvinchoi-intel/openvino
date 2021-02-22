@@ -112,10 +112,40 @@ ScatterNDUpdateKernelRef::DispatchData ScatterNDUpdateKernelRef::SetDefault(cons
     return dispatchData;
 }
 
+static std::string GetOutputIndex(const scatter_nd_update_params& params) {
+    std::string output_index_str;
+
+    const auto& output = params.output;
+   
+    const size_t B_LEN = output.Feature().v * output.Z().v * output.W().v * output.Y().v * output.X().v;
+    const size_t F_LEN = output.Z().v * output.W().v * output.Y().v * output.X().v;
+    const size_t Z_LEN = output.W().v * output.Y().v * output.X().v;
+    const size_t W_LEN = output.Y().v * output.X().v;
+    const size_t Y_LEN = output.X().v;
+
+    output_index_str.append("const uint b_remain = dst_idx % ").append(std::to_string(B_LEN)).append(";");
+    output_index_str.append("const uint f_remain = b_remain % ").append(std::to_string(F_LEN)).append(";");
+    output_index_str.append("const uint z_remain = f_remain % ").append(std::to_string(Z_LEN)).append(";");
+    output_index_str.append("const uint w_remain = z_remain % ").append(std::to_string(W_LEN)).append(";");
+    output_index_str.append("const uint y_remain = w_remain % ").append(std::to_string(Y_LEN)).append(";");
+
+    output_index_str.append("const uint b = dst_idx / ").append(std::to_string(B_LEN)).append(";");
+    output_index_str.append("const uint f = b_remain / ").append(std::to_string(F_LEN)).append(";");
+    output_index_str.append("const uint z = f_remain / ").append(std::to_string(Z_LEN)).append(";");
+    output_index_str.append("const uint w = z_remain / ").append(std::to_string(W_LEN)).append(";");
+    output_index_str.append("const uint y = w_remain / ").append(std::to_string(Y_LEN)).append(";");
+    output_index_str.append("const uint x = y_remain;");
+
+    return output_index_str;
+}
+
+
 JitConstants ScatterNDUpdateKernelRef::GetJitConstants(const scatter_nd_update_params& params) const {
     JitConstants jit = MakeBaseParamsJitConstants(params);
 
     if (!params.fused_ops.empty()) {
+        jit.AddConstant(MakeJitConstant("OUTPUT_INDEX_SECOND_KERNEL", GetOutputIndex(params)));
+
         FusedOpsConfiguration conf1 = { "_FIRST_KERNEL", GetDefaultOrder(params.output.GetDims().size()), "val", params.inputs[0].GetDType() };
         FusedOpsConfiguration conf2 = { "_SECOND_KERNEL", GetDefaultOrder(params.output.GetDims().size()), "val", params.inputs[0].GetDType() };
         jit.Merge(MakeFusedOpsJitConstants(params, {conf1, conf2}));
