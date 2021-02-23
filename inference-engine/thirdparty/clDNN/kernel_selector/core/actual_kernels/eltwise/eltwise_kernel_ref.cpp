@@ -56,7 +56,8 @@ KernelsData EltwiseKernelRef::GetKernelsData(const Params& params, const optiona
 }
 
 KernelsPriority EltwiseKernelRef::GetKernelsPriority(const Params& /*params*/, const optional_params& /*options*/) const {
-    return DONT_USE_IF_HAVE_SOMETHING_ELSE;
+    //return DONT_USE_IF_HAVE_SOMETHING_ELSE;
+    return FORCE_PRIORITY_1;
 }
 
 JitConstants EltwiseKernelRef::GetJitConstants(const eltwise_params& params) const {

@@ -156,7 +156,8 @@ inline VF<T> flatten_6d(cldnn::format input_format, VVVVVVF<T> &data) {
 
 template<typename T>
 std::vector<T> generate_random_1d(size_t a, int min, int max, int k = 8) {
-    static std::default_random_engine generator(random_seed);
+    //static std::default_random_engine generator(random_seed);
+    static std::default_random_engine generator(1000);
     // 1/k is the resolution of the floating point numbers
     std::uniform_int_distribution<int> distribution(k * min, k * max);
     std::vector<T> v(a);

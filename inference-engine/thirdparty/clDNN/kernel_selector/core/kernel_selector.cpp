@@ -120,6 +120,8 @@ KernelsData kernel_selector_base::GetNaiveBestKernel(const Params& params,
         kernelsData[0].kernels[0].layerID = params.layerID;
     }
 
+    printf("kernelNAme: %s \n", kernelName.c_str());
+
     return kernelsData;
 }
 

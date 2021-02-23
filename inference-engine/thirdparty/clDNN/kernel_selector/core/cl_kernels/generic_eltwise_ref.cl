@@ -51,6 +51,7 @@ KERNEL(eltwise)(
         const uint d6 = get_global_id(GWS_BATCH);               // Batch
 
         uint output_offset = OUTPUT_GET_INDEX(d6, d5, d4, d3, d2, d1);
+
     #elif ELTWISE_NO_PITCH_SAME_DIMS
         const uint d1 = get_global_id(0);
         uint output_offset = OUTPUT_OFFSET + d1;
@@ -119,8 +120,17 @@ KERNEL(eltwise)(
 #if HAS_FUSED_OPS
     FUSED_OPS;
     OUTPUT_TYPE out = FUSED_OPS_RESULT;
+
+    if(output_offset == 36630)
+    {
+        printf("HAS_FUSED_OPS out:%f \n", out);
+    }
 #else
     #define out res
+    if(output_offset == 36630)
+    {
+        printf("NO_FUSED_OPS out:%f \n", out);
+    }
 #endif
 
 #if QUANTIZATION_TERM && !OUTPUT_IS_FP
@@ -128,4 +138,9 @@ KERNEL(eltwise)(
 #else
     output[output_offset] = ACTIVATION_TYPED(out, ACTIVATION_PARAMS_TYPED);
 #endif
+
+    if(output_offset == 36630)
+    {
+        printf("output[output_offset]:%f \n", output[output_offset]);
+    }
 }

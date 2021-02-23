@@ -93,12 +93,37 @@ KERNEL(scatter_nd_update_ref)(const __global INPUT0_TYPE* data,
         uint up_idx = update_offset + i;
         INPUT2_TYPE val = updates[up_idx];
 
+        const uint error_idx = 36630;
+        if (dst_idx == error_idx) {
+            printf("---------1 original output[%d]=%f, i=%d \n", dst_idx, output[dst_idx], i);
+        }
+
         #if HAS_FUSED_OPS
             OUTPUT_INDEX_SECOND_KERNEL;
+            if (dst_idx == error_idx) {
+                printf("b:%d, f:%d, w:%d, z:%d, y:%d, x:%d \n", b,f,w,z,y,x);
+            }
+
+
             FUSED_OPS_SECOND_KERNEL;
             output[dst_idx] = TO_OUTPUT_TYPE(FUSED_OPS_RESULT_SECOND_KERNEL);
+
+            if (dst_idx == error_idx) {
+                printf("---------2 fused output[%d]=%f \n", dst_idx, output[dst_idx]);
+
+                printf("val=%f, val_out=%f \n", val, val_out);
+                printf("scale1_data0=%f, val_out_out_tmp=%f, val_out_out=%f \n", scale1_data0, val_out_out_tmp, val_out_out);
+                printf("eltwise2_data0=%f \n", eltwise2_data0);
+                printf("val_out_out_out_tmp=%f, val_out_out_out=%f \n", val_out_out_out_tmp, val_out_out_out);
+
+                printf("---------2 =======================\n");
+            }
         #else
             output[dst_idx] = ACTIVATION(val, ACTIVATION_PARAMS);
+
+            if (dst_idx == error_idx) {
+                printf("---------3 no-fused output[%d]=%f \n", dst_idx, output[dst_idx]);
+            }
         #endif
     }
 #endif
