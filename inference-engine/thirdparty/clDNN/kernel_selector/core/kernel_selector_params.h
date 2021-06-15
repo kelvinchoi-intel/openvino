@@ -469,6 +469,8 @@ struct FusedOpsConfiguration {
     bool allow_for_partial_preload;
     // Load index for shuffle fused op
     std::string shuffle_var_name;
+    //
+    bool allow_different_layout;
 
     FusedOpsConfiguration(std::string suffix,
                           std::vector<std::string> bfzyx_idx_order,
@@ -493,7 +495,8 @@ struct FusedOpsConfiguration {
       , index_type(index_type)
       , loop_axes(loop_axes)
       , allow_for_partial_preload(allow_for_partial_preload)
-      , shuffle_var_name(shuffle_var_name) { }
+      , shuffle_var_name(shuffle_var_name)
+      , allow_different_layout(false) { }
 
     FusedOpsConfiguration& SetVectorSize(size_t val) { vec_size = val; return *this; }
     FusedOpsConfiguration& SetLoadType(LoadType val) { load_type = val; return *this; }
