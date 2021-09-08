@@ -382,6 +382,10 @@ void prepare_primitive_fusing::fuse_simple_primitives(program &p) {
                 (!_lo.get_optimization_attributes().b_fs_zyx_fsv16_network || !_lo.is_format_optimized(node, format::b_fs_zyx_fsv16))))
                 return true;
 
+            if ((node.get_output_layout().format == format::bfyx &&
+                (!_lo.get_optimization_attributes().b_fs_yx_fsv16_network || !_lo.is_format_optimized(node, format::b_fs_yx_fsv16))))
+                return true;
+
             if ((node.get_output_layout().format == format::fs_b_yx_fsv32 ||
                 (_lo.get_optimization_attributes().fs_b_yx_fsv32_network &&
                  _lo.is_format_optimized(node, format::fs_b_yx_fsv32) && node.get_primitive()->groups == 1)))
